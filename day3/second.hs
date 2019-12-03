@@ -1,4 +1,6 @@
 import Data.List.Split
+import Data.List
+import Data.Maybe
 import Debug.Trace
 
 type Point = (Int, Int)
@@ -33,13 +35,24 @@ findIntersections wire1 wire2 = concat
   where
     segments (x:xs) = zip (x:xs) xs
 
-findMinDistance :: [Point] -> Int
-findMinDistance intersections =
-      minimum [abs x + abs y | (x, y) <- intersections, x /= 0 || y /= 0]
+stepsUntil :: [Point] -> Point -> Int
+stepsUntil wire p
+  -- | trace ("path = " ++ show path) False = undefined
+  -- | trace ("segments = " ++ show (segments wire)) False = undefined
+  | otherwise = fromMaybe 0 $ elemIndex p path
+  where
+    segments (x:xs) = zip (x:xs) xs
+    path = concat [
+        if ax == bx then [(ax, y) | y <- [ay, ay+(signum$by-ay) .. by-(signum$by-ay)]]
+        else             [(x, ay) | x <- [ax, ax+(signum$bx-ax) .. bx-(signum$bx-ax)]]
+          | ((ax, ay), (bx, by)) <- segments wire]
+
+closestCombinedDistance :: [Point] -> [Point] -> Int
+closestCombinedDistance w1 w2 = minimum $ filter (/= 0) $
+    [stepsUntil w1 p + stepsUntil w2 p | p <- findIntersections w1 w2]
 
 main = do
   contents <- readFile "input"
   let wire1 : wire2 : _ = map (convertToCoordinates . (splitOn ","))
                           $ splitOn "\n" contents
-  let intersections = findIntersections wire1 wire2
-  print $ findMinDistance intersections
+  print $ closestCombinedDistance wire1 wire2
