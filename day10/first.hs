@@ -2,7 +2,7 @@ import           Data.List
 import           Data.Map (Map)
 import qualified Data.Map as Map
 
-type Point = (Int, Int)
+type Point  = (Int, Int)
 type Vector = (Int, Int)
 
 getAsteroids :: [String] -> [Point]
@@ -10,27 +10,26 @@ getAsteroids ls = [(i, j) | (i, l) <- zip [0..] ls, (j, ch) <- zip [0..] l, ch =
 
 normalize :: Vector -> Vector
 normalize (0, 0) = (0, 0)
-normalize (x, y)
-    | otherwise = (div x g, div y g)
+normalize (x, y) = (div x g, div y g)
   where g = abs $ gcd x y
 
-sqSize :: Point -> Int
-sqSize (fx, fy) = fx^2 + fy^2
+add :: Point -> Point -> Point
+add (a,b) (c,d) = (a+c, b+d)
 
-vectorSort :: Point -> Point -> Ordering
-vectorSort a b
+vectorSorter :: Point -> Point -> Ordering
+vectorSorter a b
     | sqSize a < sqSize b = LT
     | sqSize a > sqSize b = GT
+  where sqSize (fx, fy) = fx^2 + fy^2
 
-vectorMap :: Point -> [Point] -> Map Point [Point]
-vectorMap o ps = Map.fromListWith (++) [(normalize $ vct o p, [vct o p]) | p <- ps, p /= o]
+-- maps the points to their normalized vector
+normMap :: Point -> [Point] -> Map Vector [Point]
+normMap o ps = Map.fromListWith (++) [(normalize $ vct o p, [vct o p]) | p <- ps, p /= o]
   where vct (fx, fy) (tx, ty) = (tx - fx, ty - fy)
 
 reachableAsteroids :: Point -> [Point] -> [Point]
-reachableAsteroids p asts = Map.elems mClosest
-  where
-    m = vectorMap p asts
-    mClosest = Map.map (head . (sortBy vectorSort)) m
+reachableAsteroids p asts = Map.elems $ Map.map (head . (sortBy vectorSorter)) m
+  where m = normMap p asts
 
 findBase :: [Point] -> (Int, Point)
 findBase asts = maximum [(length $ reachableAsteroids a asts, a) | a <- asts]
