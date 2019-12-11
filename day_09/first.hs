@@ -34,15 +34,15 @@ parseOp n = (n `mod` 100, [getDigit 2, getDigit 3, getDigit 4])
 
 execute :: Computer -> Computer
 execute comp@Computer{..} = case op of
-      1  -> execute comp{ptr=ptr + 4, tape=set (address 3) (val 1 + val 2) tape,                   ins=ins, outs=outs,         relBase=relBase }
-      2  -> execute comp{ptr=ptr + 4, tape=set (address 3) (val 1 * val 2) tape,                   ins=ins, outs=outs,         relBase=relBase }
-      3  -> execute comp{ptr=ptr + 2, tape=set (address 1) (head ins) tape,                   ins=tail ins, outs=outs,         relBase=relBase }
-      4  -> execute comp{ptr=ptr + 2, tape=tape,                                                   ins=ins, outs=(val 1:outs), relBase=relBase }
-      5  -> execute comp{ptr=if val 1 > 0 then val 2 else ptr+3,  tape=tape,                       ins=ins, outs=outs,         relBase=relBase }
-      6  -> execute comp{ptr=if val 1 == 0 then val 2 else ptr+3, tape=tape,                       ins=ins, outs=outs,         relBase=relBase }
-      7  -> execute comp{ptr=ptr + 4, tape=set (address 3) (if val 1 < val 2 then 1 else 0)  tape, ins=ins, outs=outs,         relBase=relBase }
-      8  -> execute comp{ptr=ptr + 4, tape=set (address 3) (if val 1 == val 2 then 1 else 0) tape, ins=ins, outs=outs,         relBase=relBase }
-      9  -> execute comp{ptr=ptr + 2, tape=tape,                                                   ins=ins, outs=outs, relBase=relBase + val 1 }
+      1  -> execute comp{ptr=ptr + 4, tape=set (address 3) (val 1 + val 2) tape}
+      2  -> execute comp{ptr=ptr + 4, tape=set (address 3) (val 1 * val 2) tape}
+      3  -> execute comp{ptr=ptr + 2, tape=set (address 1) (head ins) tape, ins=tail ins}
+      4  -> execute comp{ptr=ptr + 2, outs=(val 1:outs)}
+      5  -> execute comp{ptr=if val 1 > 0 then val 2 else ptr+3}
+      6  -> execute comp{ptr=if val 1 == 0 then val 2 else ptr+3}
+      7  -> execute comp{ptr=ptr + 4, tape=set (address 3) (if val 1 < val 2 then 1 else 0) tape}
+      8  -> execute comp{ptr=ptr + 4, tape=set (address 3) (if val 1 == val 2 then 1 else 0) tape}
+      9  -> execute comp{ptr=ptr + 2, relBase=relBase + val 1 }
       99 -> comp --halt
     where
       address i = if (digs !! (i-1)) == 2 then (tape ! (ptr + i)) + relBase else tape ! (ptr + i)
